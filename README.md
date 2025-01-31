@@ -39,13 +39,30 @@ TINYLINUX/
 
 ## Screenshots
 
-### 1. Shell Implementation (Code Snippet)
-![Shell Code](ss/(6).jpeg)  
-*Core loop for command execution (full code in `shell.c`).*
-
-### 2. Kernel Configuration Interface
-![Kernel Config](ss/(2).jpeg)  
-*Example of kernel module selection and error handling.*
+<div align="center">
+  <img src="./ss/(1).jpeg?raw=true" width="45%" alt="">
+  <img src="./ss/(2).jpeg?raw=true" width="45%" alt="">
+</div>
+<div align="center">
+  <img src="./ss/(5).jpeg?raw=true" width="45%" alt="">
+  <img src="./ss/(7).jpeg?raw=true" width="45%" alt="">
+</div>
+<div align="center">
+  <img src="./ss/(6).jpeg?raw=true" width="45%" alt="">
+  <img src="./ss/(4).jpeg?raw=true" width="45%" alt="">
+</div>
+<div align="center">
+  <img src="./ss/(9).jpeg?raw=true" width="45%" alt="">
+  <img src="./ss/(8).jpeg?raw=true" width="45%" alt="">
+</div>
+<div align="center">
+  <img src="./ss/(11).jpeg?raw=true" width="45%" alt="">
+  <img src="./ss/(10).jpeg?raw=true" width="45%" alt="">
+</div>
+<div align="center">
+  <img src="./ss/(13).jpeg?raw=true" width="45%" alt="">
+  <img src="./ss/(12).jpeg?raw=true" width="45%" alt="">
+</div>
 
 ---
 
