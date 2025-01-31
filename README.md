@@ -2,7 +2,6 @@
 
 A minimal Linux distribution focusing on a compact kernel, custom shell, and efficient system call integration. Designed for educational purposes and lightweight applications.
 
-![TinyLinux Demo](https://via.placeholder.com/800x400.png?text=TinyLinux+Shell+Demo)  
 *Example shell interaction (see [screenshots](#screenshots) below).*
 
 ---
@@ -41,14 +40,12 @@ TINYLINUX/
 ## Screenshots
 
 ### 1. Shell Implementation (Code Snippet)
-![Shell Code](images/(6).jpeg)  
+![Shell Code](ss/(6).jpeg)  
 *Core loop for command execution (full code in `shell.c`).*
 
 ### 2. Kernel Configuration Interface
-![Kernel Config](images/(2).jpeg)  
+![Kernel Config](ss/(2).jpeg)  
 *Example of kernel module selection and error handling.*
-
-*(Add remaining screenshots similarly)*
 
 ---
 
