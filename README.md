@@ -2,133 +2,125 @@
 
 A minimal Linux distribution focusing on a compact kernel, custom shell, and efficient system call integration. Designed for educational purposes and lightweight applications.
 
-![TinyLinux Demo](https://via.placeholder.com/800x400.png?text=TinyLinux+Demo+in+QEMU)
+![TinyLinux Demo](https://via.placeholder.com/800x400.png?text=TinyLinux+Shell+Demo)  
+*Example shell interaction (see [screenshots](#screenshots) below).*
+
+---
 
 ## Features
 
 - **Ultra-Compact Kernel**: Configured with `tinyconfig` (size ~781 KB).
-- **Custom Shell**: Built in C with assembly-optimized system calls.
+- **Custom Shell**: Built in C with assembly-optimized system calls ([ABI reference](https://en.wikipedia.org/wiki/X86_calling_conventions#System_V_AMD64_ABI)).
 - **Minimal Footprint**: Final ISO size as low as **2.0 MB** (3.1 MB with Lua).
 - **QEMU-Compatible**: Test the distro effortlessly in an emulated environment.
+
+---
 
 ## Project Structure
 
 ~~~
 TINYLINUX/
-├── shell/                   # Shell implementation and dependencies
-│   ├── asm_shell/          # Assembly-based shell components
+├── shell/                   # Shell implementation
+│   ├── asm_shell/          # Assembly-based components
 │   │   └── shell.asm
-│   └── lua_build/          # Lua integration build files
+│   └── lua_build/          # Lua integration
 │       ├── lua-5.4.7/
 │       └── lua-5.4.7.tar.gz
-├── kernel_without_shell/   # Minimal kernel configuration without shell
-├── build.sh                # Main build script
-├── init*                   # Initialization scripts (.cpio variants)
-├── shell.c                 # C-based shell implementation
-├── sys.S                   # Assembly system call wrappers
-├── syscalls_64.h           # System call definitions
-├── tinylinux_shell.iso     # Base ISO image
-├── tinyLinux_shell.ua.iso  # ISO with Lua integration
-├── LICENSE
-└── README.md
+├── kernel_without_shell/   # Minimal kernel (no shell)
+├── build.sh                # Build automation script
+├── init*                   # Initramfs configurations
+├── shell.c                 # C shell source
+├── sys.S                   # Assembly syscall wrappers
+├── tinylinux_shell.iso     # Base ISO
+├── tinyLinux_shell.ua.iso  # ISO with Lua
+└── ...                     # [See full structure](#screenshots)
 ~~~
 
-# Build Artifacts (generated during compilation)
+---
 
-- *.o :                # Object files
-- entry.id :          # Build identifier
-- files.cpio :        # Packaged filesystem
-- lua :               # Compiled Lua interpreter
+## Screenshots
 
+### 1. Shell Implementation (Code Snippet)
+![Shell Code](images/(6).jpeg)  
+*Core loop for command execution (full code in `shell.c`).*
 
-**Key Files**:
-- `build.sh`: Automated build script for the distro
-- `init*.cpio`: Different initramfs configurations
-- `sys.S`: Assembly system call implementations
-- `syscalls_64.h`: Kernel system call headers
+### 2. Kernel Configuration Interface
+![Kernel Config](images/(2).jpeg)  
+*Example of kernel module selection and error handling.*
 
-**Notable Directories**:
-- `asm_shell/`: Contains low-level assembly shell components
-- `lua_build/`: Lua source and build artifacts for extended functionality
-- `kernel_without_shell/`: Minimal kernel build without shell dependencies
+*(Add remaining screenshots similarly)*
 
-## Prerequisites
+---
 
-- Linux-based host system (Ubuntu/Debian recommended)
-- Build tools: `gcc`, `make`, `binutils`, `libc-dev`
-- QEMU for emulation: `sudo apt install qemu-system-x86`
+## Key Technical Components
 
-## Building the Kernel
+### Custom Shell Design
+~~~c
+#include <unistd.h>
+#include <sys/wait.h>
 
-1. **Clone and Configure the Kernel**:
-   ~~~bash
-   git clone https://github.com/torvalds/linux.git
-   cd linux
-   make tinyconfig
-   ~~~
-   - Enable **64-bit support**, **initramfs**, and **C standard libraries** in `make menuconfig`.
+// Simplified main loop (full code in shell.c)
+int main() {
+    char command[255];
+    for (;;) {
+        write(1, "# ", 2);
+        int count = read(0, command, 255);
+        command[count-1] = 0; // Null-terminate
+        
+        pid_t pid = fork();
+        if (pid == 0) {
+            execve(command, NULL, NULL);
+            _exit(1); // Fail if execve returns
+        } else {
+            siginfo_t info;
+            waitid(P_ALL, 0, &info, WEXITED);
+        }
+    }
+}
+~~~
+*Follows [System V AMD64 ABI](https://en.wikipedia.org/wiki/X86_calling_conventions#System_V_AMD64_ABI) for system calls.*
 
-2. **Compile**:
-   ~~~bash
-   make -j4
-   ~~~
-   Validate the kernel image size at `arch/x86/boot/bzImage`.
-
-## User Space Setup
-
-1. **Build the Shell**:
-   ~~~bash
-   gcc -static -o shell shell.c sys.S
-   strip shell   # Reduce binary size
-   ~~~
-
-2. **Create initramfs**:
-   ~~~bash
-   mkdir initramfs
-   echo '#!/bin/sh' > initramfs/init
-   echo '/shell' >> initramfs/init
-   chmod +x initramfs/init
-   cp shell initramfs/
-   ~~~
-
-## Testing with QEMU
-
-1. **Package the ISO**:
-   ~~~bash
-   cd initramfs
-   find . | cpio -o -H newc | gzip > ../initramfs.cpio.gz
-   cd ..
-   qemu-system-x86_64 -kernel linux/arch/x86/boot/bzImage -initrd initramfs.cpio.gz
-   ~~~
-
-2. **Verify Functionality**:
-   - Test commands like `/bin/ls` in the custom shell.
-
-## Assembly System Calls
-
-The `sys.S` file provides low-level system call wrappers:
+### Assembly System Calls
 ~~~nasm
-.global asm_waitid
+; sys.S - Waitid implementation (Intel SDM Vol. 2 reference)
 asm_waitid:
-    mov rax, 247
+    mov rax, 247     ; SYS_waitid
     syscall
     ret
 ~~~
+*See [Intel® 64 and IA-32 Architectures Software Developer Manuals](https://cdrdv2-public.intel.com/782156/325383-sdm-vol-2abcd.pdf) for syscall details.*
 
-## Final ISO Creation
+---
 
-1. **Build Bootable Image**:
+## Building & Testing
+
+1. **Compile the Shell**:
    ~~~bash
-   grub-mkrescue -o TinyLinux.iso kernel/ initramfs/
-   # or use xorriso for finer control
+   gcc -static -o shell shell.c sys.S
+   strip shell
    ~~~
 
-## Conclusion
+2. **Create Initramfs**:
+   ~~~bash
+   echo '#!/bin/sh' > init
+   echo '/shell' >> init
+   chmod +x init
+   ~~~
 
-This project demonstrates:
-- Configuring a minimal Linux kernel.
-- Integrating custom user-space components.
-- Achieving a functional distro under **3.1 MB**.
+3. **Test in QEMU**:
+   ~~~bash
+   qemu-system-x86_64 -kernel bzImage -initrd initramfs.cpio.gz
+   ~~~
+
+---
+
+## References
+
+1. [System V AMD64 ABI](https://en.wikipedia.org/wiki/X86_calling_conventions#System_V_AMD64_ABI) - Calling convention for syscalls
+2. [Intel® 64 Architecture Manual](https://cdrdv2-public.intel.com/782156/325383-sdm-vol-2abcd.pdf) - Low-level syscall details
+3. [Linux Kernel Documentation](https://www.kernel.org/doc/html/latest/) - Kernel configuration
+
+---
 
 ## License
 
