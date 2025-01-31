@@ -14,14 +14,43 @@ A minimal Linux distribution focusing on a compact kernel, custom shell, and eff
 ## Project Structure
 
 ~~~
-.
-├── kernel/            # Custom-configured Linux kernel
-├── user-space/
-│   ├── shell.c        # Minimal shell implementation
-│   └── sys.S          # Assembly system call wrappers
-├── initramfs/         # Initial RAM filesystem (includes init and shell)
-└── scripts/           # Build and linker scripts
+TINYLINUX/
+├── shell/                   # Shell implementation and dependencies
+│   ├── asm_shell/          # Assembly-based shell components
+│   │   └── shell.asm
+│   └── lua_build/          # Lua integration build files
+│       ├── lua-5.4.7/
+│       └── lua-5.4.7.tar.gz
+├── kernel_without_shell/   # Minimal kernel configuration without shell
+├── build.sh                # Main build script
+├── init*                   # Initialization scripts (.cpio variants)
+├── shell.c                 # C-based shell implementation
+├── sys.S                   # Assembly system call wrappers
+├── syscalls_64.h           # System call definitions
+├── tinylinux_shell.iso     # Base ISO image
+├── tinyLinux_shell.ua.iso  # ISO with Lua integration
+├── LICENSE
+└── README.md
 ~~~
+
+# Build Artifacts (generated during compilation)
+
+- *.o :                # Object files
+- entry.id :          # Build identifier
+- files.cpio :        # Packaged filesystem
+- lua :               # Compiled Lua interpreter
+
+
+**Key Files**:
+- `build.sh`: Automated build script for the distro
+- `init*.cpio`: Different initramfs configurations
+- `sys.S`: Assembly system call implementations
+- `syscalls_64.h`: Kernel system call headers
+
+**Notable Directories**:
+- `asm_shell/`: Contains low-level assembly shell components
+- `lua_build/`: Lua source and build artifacts for extended functionality
+- `kernel_without_shell/`: Minimal kernel build without shell dependencies
 
 ## Prerequisites
 
